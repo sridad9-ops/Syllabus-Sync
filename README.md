@@ -85,10 +85,7 @@ components themselves (`Card`, `Button`, `Select`, etc.) don't hardcode colors.
 There's also a single-file HTML demo (`syllabus-sync-demo.html`, shared separately, not
 included in this zip) that replicates the same upload → review → export flow entirely
 client-side, using pdf.js/mammoth.js for extraction and a direct Claude API call instead
-of the FastAPI backend. It shares this app's visual theme and table/export logic, but it's
-a standalone sandbox artifact for quick testing — the app in this zip (with the real
-FastAPI backend, OpenAI structured outputs, and Google Calendar OAuth) is the one meant to
-actually be run and used day to day.
+of the FastAPI backend. It shares this app's visual theme and table/export logic, but you have to make a whole Google Cloud OAuth Account and set up Client ID and all that, be aware.
 
 ## Notes / things to harden before production
 
