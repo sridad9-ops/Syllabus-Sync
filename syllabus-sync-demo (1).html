@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Syllabus Sync — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --paper:#F1EFEA;
+    --paper-raised:#FBFAF7;
+    --ink:#1B1D22;
+    --ink-soft:#5B5A54;
+    --hairline:#D8D3C7;
+    --pine:#2F5D50;
+    --pine-dark:#234A40;
+    --pine-tint:#E4EBE8;
+    --brick:#B33F3F;
+    --brick-tint:#F5E6E5;
+    --mustard:#C99A2E;
+    --mustard-tint:#F7EDD6;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:48px 24px 96px;}
+  h1,h2,h3{font-family:'Source Serif 4',Georgia,serif;margin:0;letter-spacing:-0.01em;}
+  header.top{margin-bottom:36px;}
+  header.top h1{font-size:2rem;font-weight:700;}
+  header.top p{margin:8px 0 0;color:var(--ink-soft);max-width:52ch;}
+  .ruled{border:none;border-top:1px solid var(--hairline);margin:32px 0;}
+
+  .panel{
+    background:var(--paper-raised);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:24px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h2{font-size:1.125rem;font-weight:600;margin-bottom:4px;}
+  .panel .sub{color:var(--ink-soft);font-size:0.875rem;margin-bottom:18px;}
+
+  .dropzone{
+    border:1.5px dashed var(--hairline);
+    border-radius:var(--radius);
+    padding:36px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone.drag{border-color:var(--pine);background:var(--pine-tint);}
+  .dropzone svg{opacity:.55;margin-bottom:10px;}
+  .dropzone .fname{font-weight:600;}
+  .dropzone .hint{color:var(--ink-soft);font-size:0.8125rem;margin-top:4px;}
+  input[type=file]{display:none;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+  label.field{display:flex;flex-direction:column;gap:6px;font-size:0.8125rem;font-weight:600;color:var(--ink-soft);}
+  input[type=date], input[type=number], input[type=text]{
+    font-family:'Inter',sans-serif;
+    font-size:0.9375rem;
+    padding:9px 10px;
+    border:1px solid var(--hairline);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus{outline:2px solid var(--pine);outline-offset:1px;}
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:0.875rem;
+    border-radius:5px;
+    border:1px solid transparent;
+    padding:10px 16px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:background .15s ease, opacity .15s ease;
+  }
+  button:disabled{cursor:not-allowed;opacity:.5;}
+  .btn-primary{background:var(--pine);color:#fff;}
+  .btn-primary:hover:not(:disabled){background:var(--pine-dark);}
+  .btn-outline{background:transparent;border-color:var(--hairline);color:var(--ink);}
+  .btn-outline:hover:not(:disabled){background:var(--pine-tint);border-color:var(--pine);}
+  .btn-full{width:100%;justify-content:center;margin-top:20px;padding:12px;}
+  .btn-ghost{background:transparent;border:none;color:var(--ink-soft);padding:6px;}
+  .btn-ghost:hover{color:var(--brick);}
+
+  .spinner{
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .btn-outline .spinner{border-color:rgba(47,93,80,.25);border-top-color:var(--pine);}
+
+  .error{color:var(--brick);font-size:0.875rem;margin-top:12px;}
+  .warn{color:var(--mustard);font-size:0.875rem;margin-top:8px;}
+
+  /* Review section */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .stat{border:1px solid var(--hairline);border-radius:var(--radius);background:var(--paper-raised);padding:14px 16px;}
+  .stat .num{font-family:'Source Serif 4',serif;font-size:1.75rem;font-weight:700;line-height:1;}
+  .stat .lbl{color:var(--ink-soft);font-size:0.75rem;margin-top:6px;}
+  .stat.exam .num{color:var(--brick);}
+  .stat.homework .num{color:var(--mustard);}
+  .stat.pine .num{color:var(--pine);}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;}
+  .toolbar .spacer{flex:1;}
+
+  table{width:100%;border-collapse:collapse;font-size:0.875rem;}
+  thead th{
+    text-align:left;font-weight:600;color:var(--ink-soft);
+    font-size:0.75rem;text-transform:none;
+    padding:8px 8px;border-bottom:1px solid var(--hairline);
+    background:var(--paper-raised);
+  }
+  tbody td{padding:6px 8px;border-bottom:1px solid var(--hairline);vertical-align:middle;}
+  tbody tr:hover{background:#FAFAF7;}
+  tbody tr.deselected{opacity:.45;}
+  td input[type=text], td input[type=date], td input[type=number], td select{
+    width:100%;
+    padding:6px 8px;
+    font-size:0.8125rem;
+    border:1px solid transparent;
+    border-radius:4px;
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+  }
+  td input:hover, td select:hover{border-color:var(--hairline);}
+  td input:focus, td select:focus{border-color:var(--pine);background:#fff;outline:none;}
+  .col-title{min-width:180px;}
+  .col-desc{min-width:200px;}
+  .col-type{min-width:130px;}
+  .col-date{min-width:140px;}
+  .col-weight{width:80px;}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--pine);cursor:pointer;}
+
+  .empty-row td{text-align:center;color:var(--ink-soft);padding:32px 8px;}
+
+  .gcal-setup, .claude-setup{
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    padding:14px 16px;
+    margin-bottom:16px;
+    font-size:0.875rem;
+  }
+  .gcal-setup summary, .claude-setup summary{cursor:pointer;font-weight:600;color:var(--pine);}
+  .claude-setup{margin-top:18px;margin-bottom:0;}
+  .gcal-setup-body{margin-top:12px;}
+  .gcal-setup-body p.warn-static{
+    background:var(--mustard-tint);
+    border:1px solid var(--mustard);
+    border-radius:4px;
+    padding:10px 12px;
+    color:var(--ink);
+    font-size:0.8125rem;
+    line-height:1.5;
+    margin:0 0 12px;
+  }
+  .gcal-setup-body code{
+    background:var(--paper);
+    border:1px solid var(--hairline);
+    border-radius:3px;
+    padding:1px 5px;
+    font-size:0.8em;
+  }
+  .gcal-setup-body ol{margin:0 0 4px;padding-left:20px;font-size:0.8125rem;color:var(--ink-soft);}
+  .gcal-setup-body ol li{margin-bottom:6px;}
+  .gcal-setup-body a{color:var(--pine);}
+  .gcal-setup-body label.field{color:var(--ink);}
+  .gcal-setup-body input{width:100%;}
+
+  #gcalMessage{font-size:0.875rem;margin-bottom:16px;padding:10px 12px;border-radius:4px;}
+  #gcalMessage.ok{background:var(--pine-tint);color:var(--pine-dark);}
+  #gcalMessage.err{background:var(--brick-tint);color:var(--brick);}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Syllabus Sync</h1>
+    <p>Upload a syllabus (PDF or Word) and pull out every homework, quiz, exam, and project due date — so the small stuff stops slipping through.</p>
+  </header>
+
+  <section id="uploadPanel" class="panel">
+    <h2>Upload your syllabus</h2>
+    <div class="sub">PDF or Word (.docx). Nothing is stored beyond this browser session.</div>
+
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+      <div id="dzEmpty">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4M12 4L7 9M12 4l5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        <div class="fname">Drag & drop your syllabus, or click to browse</div>
+        <div class="hint">PDF or Word (.docx)</div>
+      </div>
+      <div id="dzFile" class="hidden">
+        <div class="fname" id="dzFileName"></div>
+        <div class="hint">Click to choose a different file</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <label class="field">Semester Start Date
+        <input type="date" id="semesterStart" />
+      </label>
+      <label class="field">Default Year
+        <input type="number" id="defaultYear" />
+      </label>
+    </div>
+
+    <div id="uploadError" class="error hidden"></div>
+
+    <button class="btn-primary btn-full" id="parseBtn">Parse Syllabus</button>
+
+    <details class="claude-setup">
+      <summary>Set up AI extraction (only needed outside Claude's chat)</summary>
+      <div class="gcal-setup-body">
+        <p class="warn-static">
+          Inside Claude's chat, this works with no setup — Claude.ai proxies the extraction call
+          for you. If you're running this file as its own standalone site, that proxy doesn't
+          exist, so the request will fail ("Failed to fetch") unless you supply your own key here.
+        </p>
+        <ol>
+          <li>Get an API key from the <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Anthropic Console</a>.</li>
+          <li>Paste it below. It's used only for direct browser calls to the Anthropic API and never sent anywhere else — but it does live in this page's JavaScript while you use it, so don't publish this file publicly with a real key baked in, and prefer a key with a low spending limit.</li>
+        </ol>
+        <label class="field" style="margin-top:10px;">Anthropic API Key
+          <input type="password" id="claudeApiKey" placeholder="sk-ant-api03-…" autocomplete="off" />
+        </label>
+      </div>
+    </details>
+  </section>
+
+  <section id="reviewSection" class="hidden">
+    <hr class="ruled" />
+    <h2 id="courseTitle" style="font-size:1.375rem;margin-bottom:4px;"></h2>
+    <div id="warningsBox"></div>
+
+    <div class="stats" style="margin-top:20px;">
+      <div class="stat pine"><div class="num" id="statTotal">0</div><div class="lbl">Total Events</div></div>
+      <div class="stat exam"><div class="num" id="statExams">0</div><div class="lbl">Total Exams</div></div>
+      <div class="stat homework"><div class="num" id="statHomework">0</div><div class="lbl">Total Homeworks</div></div>
+      <div class="stat"><div class="num" id="statSelected">0</div><div class="lbl">Selected</div></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn-outline" id="addEventBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add Manual Event
+      </button>
+      <div class="spacer"></div>
+      <button class="btn-outline" id="exportIcsBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4L7 9M12 4l5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        Download .ics (<span id="icsCount">0</span>)
+      </button>
+      <button class="btn-primary" id="googleSyncBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M12 14v4M10 16h4"/></svg>
+        Sync to Google Calendar (<span id="gcalCount">0</span>)
+      </button>
+    </div>
+
+    <details class="gcal-setup">
+      <summary>Set up Google Calendar sync</summary>
+      <div class="gcal-setup-body">
+        <p class="warn-static">
+          This only works when you <strong>download this file and open it in a real browser</strong> —
+          served from a real <code>http://</code> or <code>https://</code> address (e.g. run
+          <code>python3 -m http.server</code> in the folder and open
+          <code>http://localhost:8000/syllabus-sync-demo.html</code>). Google blocks its sign-in script
+          inside Claude's in-chat preview, and double-clicking the file to open it as <code>file://</code>
+          won't work either — Google OAuth requires a registered http/https origin.
+        </p>
+        <ol>
+          <li>In the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a>, create an OAuth 2.0 <strong>Client ID</strong> (type: Web application). No client secret is needed for this flow.</li>
+          <li>Under <strong>Authorized JavaScript origins</strong>, add the exact origin you're opening this file from (e.g. <code>http://localhost:8000</code>).</li>
+          <li>Enable the <strong>Google Calendar API</strong> for that project.</li>
+          <li>Paste the Client ID below, then click "Sync to Google Calendar" above — it'll prompt you to sign in and grant calendar access.</li>
+        </ol>
+        <label class="field" style="margin-top:10px;">Google OAuth Client ID
+          <input type="text" id="googleClientId" placeholder="xxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com" />
+        </label>
+      </div>
+    </details>
+
+    <div id="gcalMessage" class="hidden"></div>
+
+    <div class="panel" style="padding:0;overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox" id="selectAll" /></th>
+            <th class="col-title">Title</th>
+            <th class="col-type">Type</th>
+            <th class="col-date">Due Date</th>
+            <th class="col-desc">Description</th>
+            <th class="col-weight">Weight %</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const EVENT_TYPES = ["homework","quiz","exam","project","paper","presentation","lab","reading","other"];
+
+// Google Calendar colorId per event type — https://developers.google.com/calendar/api/v3/reference/colors/get
+const EVENT_TYPE_COLOR_ID = {
+  homework: "9", quiz: "5", exam: "11", project: "10", paper: "6",
+  presentation: "3", lab: "7", reading: "8", other: "1",
+};
+
+let state = {
+  file: null,
+  events: [],
+  courseName: "",
+  courseCode: "",
+  warnings: [],
+};
+
+let gcalTokenClient = null;
+let gcalTokenClientId = null;
+let gcalAccessToken = null;
+
+// ---------- Dropzone ----------
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const dzEmpty = document.getElementById('dzEmpty');
+const dzFile = document.getElementById('dzFile');
+const dzFileName = document.getElementById('dzFileName');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length) setFile(e.target.files[0]);
+});
+
+function isPdf(f) { return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'); }
+function isDocx(f) {
+  return f.name.toLowerCase().endsWith('.docx') ||
+    f.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+}
+
+function setFile(f) {
+  if (!isPdf(f) && !isDocx(f)) {
+    showUploadError('Please choose a PDF or Word (.docx) file.');
+    return;
+  }
+  state.file = f;
+  dzFileName.textContent = f.name;
+  dzEmpty.classList.add('hidden');
+  dzFile.classList.remove('hidden');
+  hideUploadError();
+}
+
+function showUploadError(msg) {
+  const el = document.getElementById('uploadError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+function hideUploadError() {
+  document.getElementById('uploadError').classList.add('hidden');
+}
+
+document.getElementById('defaultYear').value = new Date().getFullYear();
+
+// ---------- PDF text extraction ----------
+async function extractPdfText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(" ") + "\n\n";
+  }
+  return text.trim();
+}
+
+async function extractDocxText(file) {
+  const buf = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: buf });
+  return (result.value || "").trim();
+}
+
+async function extractFileText(file) {
+  if (isDocx(file)) return extractDocxText(file);
+  return extractPdfText(file);
+}
+
+// ---------- Claude structured extraction ----------
+async function callClaudeMessages(schemaInstructions, apiKey) {
+  const headers = { "Content-Type": "application/json" };
+  if (apiKey) {
+    // Only used for the standalone fallback below — lets the request work
+    // outside Claude's chat sandbox, where there's no built-in proxy/credentials.
+    headers["x-api-key"] = apiKey;
+    headers["anthropic-version"] = "2023-06-01";
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+  }
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: schemaInstructions }],
+    }),
+  });
+}
+
+async function parseWithClaude(syllabusText, semesterStart, defaultYear) {
+  const schemaInstructions = `You are given raw text extracted from a college syllabus document (PDF or Word). Extract every gradeable, dated item: homework, quizzes, exams, projects, papers, presentations, labs, and graded readings.
+
+Rules:
+- Only include items that have (or can reasonably be inferred to have) a specific due date.
+- Normalize all dates to YYYY-MM-DD. ${semesterStart ? `The semester starts on ${semesterStart} — use this to resolve month/day-only dates and recurring schedules.` : ""} ${defaultYear ? `If a year is not explicitly stated for a date, assume ${defaultYear}.` : ""}
+- event_type must be exactly one of: homework, quiz, exam, project, paper, presentation, lab, reading, other.
+- Extract weight_percentage only when the syllabus states a numeric percent of the final grade for that item; otherwise use null.
+- Do not invent course name or course code.
+
+Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactly this shape:
+{
+  "course_name": string,
+  "course_code": string | null,
+  "events": [
+    {
+      "title": string,
+      "event_type": string,
+      "due_date": "YYYY-MM-DD",
+      "start_time": string | null,
+      "end_time": string | null,
+      "description": string | null,
+      "weight_percentage": number | null
+    }
+  ]
+}
+
+SYLLABUS TEXT:
+"""
+${syllabusText.slice(0, 60000)}
+"""`;
+
+  let response;
+  try {
+    // Path 1: works only inside Claude's in-chat preview, which proxies this
+    // exact call and injects credentials — no key needed, nothing to configure.
+    response = await callClaudeMessages(schemaInstructions, null);
+  } catch (networkErr) {
+    // A thrown TypeError here (not an HTTP error status) means the request
+    // never left the browser as expected — that's the "running standalone,
+    // no proxy" case. Fall back to a user-supplied key, if one was given.
+    const apiKey = document.getElementById('claudeApiKey').value.trim();
+    if (!apiKey) {
+      throw new Error(
+        "Couldn't reach the extraction API. If you're running this file outside Claude's chat " +
+        "(as its own site), open \"Set up AI extraction\" below and paste your own Anthropic API key."
+      );
+    }
+    response = await callClaudeMessages(schemaInstructions, apiKey);
+  }
+
+  if (!response.ok) {
+    let detail = "";
+    try { detail = (await response.json())?.error?.message || ""; } catch {}
+    throw new Error(`Extraction request failed (${response.status})${detail ? `: ${detail}` : ""}`);
+  }
+  const data = await response.json();
+  const textBlock = (data.content || []).find(b => b.type === 'text');
+  if (!textBlock) throw new Error("Model returned no text content.");
+
+  let clean = textBlock.text.trim();
+  clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/,'');
+
+  let parsed;
+  try {
+    parsed = JSON.parse(clean);
+  } catch (e) {
+    throw new Error("Could not parse the model's JSON output.");
+  }
+  return parsed;
+}
+
+// ---------- Parse flow ----------
+document.getElementById('parseBtn').addEventListener('click', async () => {
+  hideUploadError();
+  if (!state.file) { showUploadError('Please select a syllabus file first.'); return; }
+
+  const btn = document.getElementById('parseBtn');
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Parsing syllabus…';
+
+  try {
+    const semesterStart = document.getElementById('semesterStart').value;
+    const defaultYear = document.getElementById('defaultYear').value;
+
+    const text = await extractFileText(state.file);
+    if (!text) throw new Error("No extractable text found in this file (a scanned PDF may need OCR).");
+
+    const result = await parseWithClaude(text, semesterStart, defaultYear);
+
+    state.courseName = result.course_name || "";
+    state.courseCode = result.course_code || "";
+    state.events = (result.events || []).map(e => ({
+      id: crypto.randomUUID(),
+      title: e.title || "Untitled",
+      event_type: EVENT_TYPES.includes(e.event_type) ? e.event_type : "other",
+      due_date: e.due_date || "",
+      description: e.description || "",
+      weight_percentage: e.weight_percentage ?? null,
+      selected: true,
+    }));
+    state.warnings = state.events.length ? [] : ["No dated assignments were found — you can add events manually below."];
+
+    renderReview();
+    document.getElementById('reviewSection').classList.remove('hidden');
+    document.getElementById('reviewSection').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    showUploadError(err.message || "Something went wrong parsing your syllabus.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+});
+
+// ---------- Review table rendering ----------
+function renderReview() {
+  document.getElementById('courseTitle').textContent =
+    state.courseName + (state.courseCode ? ` (${state.courseCode})` : "");
+
+  const warnBox = document.getElementById('warningsBox');
+  warnBox.innerHTML = "";
+  state.warnings.forEach(w => {
+    const p = document.createElement('div');
+    p.className = 'warn';
+    p.textContent = w;
+    warnBox.appendChild(p);
+  });
+
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  const total = state.events.length;
+  const exams = state.events.filter(e => e.event_type === 'exam').length;
+  const hw = state.events.filter(e => e.event_type === 'homework').length;
+  const selected = state.events.filter(e => e.selected).length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statExams').textContent = exams;
+  document.getElementById('statHomework').textContent = hw;
+  document.getElementById('statSelected').textContent = selected;
+  document.getElementById('icsCount').textContent = selected;
+  document.getElementById('gcalCount').textContent = selected;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = "";
+
+  if (!state.events.length) {
+    const tr = document.createElement('tr');
+    tr.className = 'empty-row';
+    tr.innerHTML = `<td colspan="7">No events yet. Add one manually above.</td>`;
+    tbody.appendChild(tr);
+  }
+
+  state.events.forEach(ev => {
+    const tr = document.createElement('tr');
+    if (!ev.selected) tr.classList.add('deselected');
+
+    tr.innerHTML = `
+      <td><input type="checkbox" data-field="selected" ${ev.selected ? 'checked' : ''} /></td>
+      <td class="col-title"><input type="text" data-field="title" value="${escapeAttr(ev.title)}" /></td>
+      <td class="col-type">
+        <select data-field="event_type">
+          ${EVENT_TYPES.map(t => `<option value="${t}" ${t === ev.event_type ? 'selected' : ''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}
+        </select>
+      </td>
+      <td class="col-date"><input type="date" data-field="due_date" value="${escapeAttr(ev.due_date)}" /></td>
+      <td class="col-desc"><input type="text" data-field="description" value="${escapeAttr(ev.description || '')}" placeholder="—" /></td>
+      <td class="col-weight"><input type="number" data-field="weight_percentage" value="${ev.weight_percentage ?? ''}" placeholder="—" /></td>
+      <td><button class="btn-ghost" data-action="delete" aria-label="Delete row">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+      </button></td>
+    `;
+
+    tr.querySelectorAll('[data-field]').forEach(input => {
+      const field = input.dataset.field;
+      const eventType = input.type === 'checkbox' ? 'change' : 'input';
+      input.addEventListener(eventType, () => {
+        if (field === 'selected') {
+          ev.selected = input.checked;
+          tr.classList.toggle('deselected', !ev.selected);
+        } else if (field === 'weight_percentage') {
+          ev.weight_percentage = input.value === '' ? null : Number(input.value);
+        } else {
+          ev[field] = input.value;
+        }
+        renderStats();
+        updateSelectAllState();
+      });
+    });
+
+    tr.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      state.events = state.events.filter(e => e.id !== ev.id);
+      renderTable();
+      renderStats();
+      updateSelectAllState();
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  updateSelectAllState();
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function updateSelectAllState() {
+  const all = document.getElementById('selectAll');
+  if (!state.events.length) { all.checked = false; all.indeterminate = false; return; }
+  const selectedCount = state.events.filter(e => e.selected).length;
+  all.checked = selectedCount === state.events.length;
+  all.indeterminate = selectedCount > 0 && selectedCount < state.events.length;
+}
+
+document.getElementById('selectAll').addEventListener('change', (e) => {
+  state.events.forEach(ev => ev.selected = e.target.checked);
+  renderTable();
+  renderStats();
+});
+
+document.getElementById('addEventBtn').addEventListener('click', () => {
+  state.events.unshift({
+    id: crypto.randomUUID(),
+    title: "New assignment",
+    event_type: "homework",
+    due_date: new Date().toISOString().slice(0,10),
+    description: "",
+    weight_percentage: null,
+    selected: true,
+  });
+  renderTable();
+  renderStats();
+});
+
+// ---------- ICS export ----------
+function pad(n){ return n.toString().padStart(2,'0'); }
+
+function buildIcs(events) {
+  const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Syllabus Sync Demo//EN","CALSCALE:GREGORIAN"];
+  const now = new Date();
+  const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+  events.forEach(ev => {
+    if (!ev.due_date) return;
+    const [y,m,d] = ev.due_date.split('-').map(Number);
+    const next = new Date(Date.UTC(y, m-1, d+1));
+    lines.push("BEGIN:VEVENT");
+    lines.push(`UID:${ev.id}@syllabus-sync-demo`);
+    lines.push(`DTSTAMP:${dtstamp}`);
+    lines.push(`DTSTART;VALUE=DATE:${y}${pad(m)}${pad(d)}`);
+    lines.push(`DTEND;VALUE=DATE:${next.getUTCFullYear()}${pad(next.getUTCMonth()+1)}${pad(next.getUTCDate())}`);
+    lines.push(`SUMMARY:${escapeIcs(`[${ev.event_type.toUpperCase()}] ${ev.title}`)}`);
+    if (ev.description) lines.push(`DESCRIPTION:${escapeIcs(ev.description)}`);
+    lines.push("END:VEVENT");
+  });
+
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+}
+function escapeIcs(t){ return t.replace(/\\/g,'\\\\').replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/\n/g,'\\n'); }
+
+document.getElementById('exportIcsBtn').addEventListener('click', () => {
+  const selected = state.events.filter(e => e.selected);
+  const ics = buildIcs(selected);
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${state.courseName || 'syllabus'}-events.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ---------- Google Calendar sync ----------
+function showGcalMessage(msg, isError) {
+  const el = document.getElementById('gcalMessage');
+  el.textContent = msg;
+  el.classList.remove('hidden', 'ok', 'err');
+  el.classList.add(isError ? 'err' : 'ok');
+}
+function hideGcalMessage() {
+  document.getElementById('gcalMessage').classList.add('hidden');
+}
+
+function initGoogleAuth(clientId) {
+  if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+    throw new Error(
+      "Google's sign-in script didn't load — that almost always means you're viewing this inside " +
+      "Claude's in-chat preview, which blocks it. Download this file and open it from a real " +
+      "http:// or https:// address instead (see the setup panel above)."
+    );
+  }
+  gcalTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: "https://www.googleapis.com/auth/calendar.events",
+    callback: "", // assigned per-request in requestGoogleToken
+  });
+  gcalTokenClientId = clientId;
+}
+
+function requestGoogleToken() {
+  return new Promise((resolve, reject) => {
+    gcalTokenClient.callback = (resp) => {
+      if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
+      gcalAccessToken = resp.access_token;
+      resolve(resp.access_token);
+    };
+    gcalTokenClient.requestAccessToken({ prompt: gcalAccessToken ? "" : "consent" });
+  });
+}
+
+async function syncSelectedToGoogleCalendar() {
+  hideGcalMessage();
+
+  const selected = state.events.filter(e => e.selected);
+  if (!selected.length) { showGcalMessage('Select at least one event first.', true); return; }
+
+  const clientId = document.getElementById('googleClientId').value.trim();
+  if (!clientId) {
+    showGcalMessage('Enter your Google OAuth Client ID in the setup panel above first.', true);
+    document.querySelector('.gcal-setup').open = true;
+    return;
+  }
+
+  const btn = document.getElementById('googleSyncBtn');
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Connecting…';
+
+  try {
+    if (!gcalTokenClient || gcalTokenClientId !== clientId) {
+      initGoogleAuth(clientId);
+      gcalAccessToken = null; // force fresh consent if the client ID changed
+    }
+    await requestGoogleToken();
+
+    btn.innerHTML = '<span class="spinner"></span> Syncing…';
+
+    let synced = 0, failed = 0;
+    for (const ev of selected) {
+      if (!ev.due_date) { failed++; continue; }
+      const [y, m, d] = ev.due_date.split('-').map(Number);
+      const next = new Date(Date.UTC(y, m - 1, d + 1));
+
+      const body = {
+        summary: `[${ev.event_type.toUpperCase()}] ${ev.title}`,
+        description: ev.description || undefined,
+        colorId: EVENT_TYPE_COLOR_ID[ev.event_type] || "1",
+        start: { date: ev.due_date },
+        end: { date: `${next.getUTCFullYear()}-${pad(next.getUTCMonth() + 1)}-${pad(next.getUTCDate())}` },
+      };
+
+      try {
+        const res = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${gcalAccessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) synced++; else failed++;
+      } catch {
+        failed++;
+      }
+    }
+
+    showGcalMessage(
+      `Synced ${synced} event(s) to Google Calendar.${failed ? ` ${failed} failed.` : ""}`,
+      synced === 0 && failed > 0
+    );
+  } catch (err) {
+    showGcalMessage(err.message || "Something went wrong connecting to Google Calendar.", true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+}
+
+document.getElementById('googleSyncBtn').addEventListener('click', syncSelectedToGoogleCalendar);
+</script>
+</body>
+</html>
