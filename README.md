@@ -6,7 +6,7 @@ Google Calendar.
 
 Sorry for the lack of organization of the repo :(
 
-IF YOU DON'T WANT TO DO ALL THIS, THERE'S AN HTML VERSION AVAILABLE IN THE REPO. Just download the  "syllabus-sync-demo.html". This runs on your browser, so you don't need to have it set up in your terminal and all that.
+IF YOU DON'T WANT TO DO ALL THIS, THERE'S AN HTML VERSION AVAILABLE IN THE REPO. Just download the  "syllabus-sync-demo.html". This runs on your browser (works best inside of a claude chat, but you can run it as its own site as well, just needs one step of set up), so you don't need to have it set up in your terminal and all that.
 
 
 ## Backend setup
