@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap");
+
+@layer base {
+  :root {
+    /* "Gradebook" palette — warm paper, pine green primary, brick/mustard accents */
+    --background: 43 20% 93%; /* paper #F1EFEA */
+    --foreground: 223 11% 12%; /* ink #1B1D22 */
+
+    --card: 45 33% 98%; /* paper-raised #FBFAF7 */
+    --card-foreground: 223 11% 12%;
+
+    --primary: 163 33% 27%; /* pine #2F5D50 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 154 15% 91%; /* pine-tint #E4EBE8 */
+    --secondary-foreground: 163 33% 27%;
+
+    --muted: 42 18% 90%;
+    --muted-foreground: 51 4% 34%; /* ink-soft #5B5A54 */
+
+    --accent: 42 67% 90%; /* mustard-tint #F7EDD6 */
+    --accent-foreground: 42 63% 30%;
+
+    --destructive: 0 48% 47%; /* brick #B33F3F */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 42 18% 81%; /* hairline #D8D3C7 */
+    --input: 42 18% 81%;
+    --ring: 163 33% 27%; /* pine */
+
+    /* Event-type accents, used by the review table / stat cards */
+    --pine: 163 33% 27%;
+    --brick: 0 48% 47%;
+    --mustard: 42 63% 48%;
+
+    --radius: 0.375rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: "Source Serif 4", Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+}
